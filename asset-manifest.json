@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/AriaWorldDemo/static/css/main.466c4cb0.css",
-    "main.js": "/AriaWorldDemo/static/js/main.313bde7f.js",
+    "main.js": "/AriaWorldDemo/static/js/main.0cb8df93.js",
     "index.html": "/AriaWorldDemo/index.html",
     "main.466c4cb0.css.map": "/AriaWorldDemo/static/css/main.466c4cb0.css.map",
-    "main.313bde7f.js.map": "/AriaWorldDemo/static/js/main.313bde7f.js.map"
+    "main.0cb8df93.js.map": "/AriaWorldDemo/static/js/main.0cb8df93.js.map"
   },
   "entrypoints": [
     "static/css/main.466c4cb0.css",
-    "static/js/main.313bde7f.js"
+    "static/js/main.0cb8df93.js"
   ]
 }

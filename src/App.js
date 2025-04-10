@@ -9,19 +9,16 @@ import { useControls } from 'leva'
 
 extend({ TAARenderPass, OutputPass })
 
-// https://twitter.com/alexcarliera
-const cakewalk = 'https://huggingface.co/cakewalk/splat-data/resolve/main'
-// https://twitter.com/dylan_ebert_
-const dylanebert = 'https://huggingface.co/datasets/dylanebert/3dgs/resolve/main/kitchen'
-
 export default function App() {
   return (
     <Canvas camera={{ position: [4, 1.5, -4], fov: 35 }}>
       <color attach="background" args={['white']} />
+
       {/* Display a single splat at a specific position */}
       <CameraControls makeDefault />
-      {/* <Splat src="https://huggingface.co/cakewalk/splat-data/resolve/main/nike.splat" /> */}
-      <Splat src="/AriaWorldDemo/assets/bonsai-7k.splat" position={[0, 0, 0]} />
+      {/* Requires appending of /AriaWorldDemo/ to front of any assets... */}
+      <Splat src="/AriaWorldDemo/assets/bonsai-7k.splat" position={[0, 0, 0]} /> 
+
     </Canvas>
   )
 }

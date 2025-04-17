@@ -10,8 +10,8 @@
         "@react-three/rapier": "1.1.2",
         "@types/three": "0.159.0",
         "leva": "0.9.32",
-        "react": "18.2.0",
-        "react-dom": "18.2.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "react-scripts": "5.0.1",
         "three": "0.159.0"
     },

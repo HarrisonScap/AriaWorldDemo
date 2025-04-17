@@ -26,8 +26,8 @@ function SinglePoint() {
     const geometry = new THREE.BufferGeometry()
     const material = new THREE.PointsMaterial({
       vertexColors: true,
-      size: 5,
-      sizeAttenuation: false,
+      size: .001,
+      sizeAttenuation: true,
     })
 
     fetch('/AriaWorldDemo/xyz.txt')

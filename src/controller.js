@@ -29,8 +29,6 @@ export function PlayerController() {
     if (keys.current['KeyA']) direction.current.x -= 1
     if (keys.current['KeyD']) direction.current.x += 1
 
-
-
     // Speed
     if (keys.current['ShiftLeft']) {
         speed = 3

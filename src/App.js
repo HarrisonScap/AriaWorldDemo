@@ -1,84 +1,116 @@
-// import * as THREE from 'three'
-// import { useRef, useEffect } from 'react'
-// import { Canvas, extend, useThree } from '@react-three/fiber'
-// import { Splat, Float, CameraControls, PointerLockControls, StatsGl, Effects, Point } from '@react-three/drei'
-// import { Physics, RigidBody, CuboidCollider, BallCollider } from '@react-three/rapier'
-// import { TAARenderPass } from 'three/examples/jsm/postprocessing/TAARenderPass'
-// import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass'
-// import { useControls } from 'leva'
-
 import * as THREE from 'three'
-import { useEffect } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { useEffect, useState, useRef } from 'react'
+import { Canvas } from '@react-three/fiber'
 import { PointerLockControls } from '@react-three/drei'
-import { PlayerController } from './controller.js' // Assuming you have a controller.js file for player movement
-// extend({ TAARenderPass, OutputPass })
-
-function SinglePoint() {
-  const { scene } = useThree()
-
-  useEffect(() => {
-    const group = new THREE.Group() // Create a group to hold the points
-    group.scale.set(0.1, 0.1, 0.1)  // Scale the entire group down
-
-    group.rotation.x = Math.PI / 2
-
-    const geometry = new THREE.BufferGeometry()
-    const material = new THREE.PointsMaterial({
-      vertexColors: true,
-      size: .001,
-      sizeAttenuation: true,
-    })
-
-    fetch('/AriaWorldDemo/xyz.txt')
-      .then((response) => response.text())
-      .then((data) => {
-        const lines = data.split('\n')
-        const vertices = []
-        const colors = []
-
-        lines.forEach((line) => {
-          const parts = line.trim().split(/\s+/)
-          if (parts.length === 5) {
-            const [x, y, z, inv_dist_std, dist_std] = parts.map(Number)
-
-            vertices.push(x, y, -z) // No need to scale here anymore
-
-            // Map dist_std to alpha (transparency)
-            // const clampedStd = Math.min(Math.max(dist_std, 0), 0.2)
-            // const alpha = 1.0 - clampedStd / 0.2
-            colors.push(1, 1, 1, 1)
-          }
-        })
-
-        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4))
-
-        const points = new THREE.Points(geometry, material)
-        group.add(points)        // Add points to the group
-        scene.add(group)         // Add the group to the scene
-      })
-
-    return () => scene.clear()
-  }, [scene])
-
-  return null
-}
-
+import { PlayerController } from './controller.js'
+import { PointCloud } from './PointCloud.js'
+import { CameraTracker } from './CameraTracker.js'
 
 export default function App() {
+  const [pointCount, setPointCount] = useState(0) // State to track the total number of points
+  const [points, setPoints] = useState([]) // State to store the points
+  const [soundEnabled, setSoundEnabled] = useState(false) // State to toggle sound
+  const audioContext = useRef(null) // Audio context reference
+  const audioSource = useRef(null) // Audio source reference
+  const cameraPosition = useRef(new THREE.Vector3()) // Track camera position
+
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'x' || event.key === 'X') {
+        setSoundEnabled((prev) => !prev) // Toggle soundEnabled state
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!soundEnabled) return // Do nothing if sound is disabled
+
+    const context = new (window.AudioContext || window.webkitAudioContext)()
+    audioContext.current = context
+
+    const loadAndPlaySound = async () => {
+      const response = await fetch('/AriaWorldDemo/assets/pointsound.wav')
+      const arrayBuffer = await response.arrayBuffer()
+      const audioBuffer = await context.decodeAudioData(arrayBuffer)
+
+      const source = context.createBufferSource()
+      source.buffer = audioBuffer
+      source.loop = true // Enable looping
+      source.connect(context.destination)
+      source.start(0)
+
+      audioSource.current = source // Store the audio source reference
+    }
+
+    loadAndPlaySound()
+
+    return () => {
+      // Stop the audio source when the component unmounts or sound is disabled
+      if (audioSource.current) {
+        audioSource.current.stop()
+        audioSource.current = null
+      }
+      if (audioContext.current) {
+        audioContext.current.close()
+        audioContext.current = null
+      }
+    }
+  }, [soundEnabled]) // Re-run when soundEnabled changes
+
   return (
-    <Canvas camera={{ position: [4, 1.5, -4], fov: 35}}>
-      <color attach="background" args={['black']} />
+    <>
+      {/* Overlay text */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        color: 'white',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        padding: '5px',
+        borderRadius: '5px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '20px',
+        zIndex: 1,
+      }}>
+        Points in Scene: {pointCount}
+      </div>
 
-      {/* Display a single splat at a specific position */}
-      {/* <CameraControls makeDefault /> */}
-      <PointerLockControls />
-      <PlayerController />
+      {/* Sound Toggle */}
+      <div style={{
+        position: 'absolute',
+        top: '50px',
+        left: '10px',
+        color: 'white',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        padding: '5px',
+        borderRadius: '5px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '16px',
+        zIndex: 1,
+      }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={soundEnabled}
+            onChange={(e) => setSoundEnabled(e.target.checked)}
+          />
+          Enable Ominous Ethereral Humming (X to toggle)
+        </label>
+      </div>
 
-      {/* <Splat src="/AriaWorldDemo/assets/bonsai-7k.splat" position={[0, 0, 0]} />  */}
-      <SinglePoint />
-
-    </Canvas>
+      {/* Canvas */}
+      <Canvas camera={{ position: [4, 1.5, -4], fov: 35 }}>
+        <color attach="background" args={['black']} />
+        <PointerLockControls />
+        <PlayerController />
+        <PointCloud setPointCount={setPointCount} setPoints={setPoints} />
+        <CameraTracker cameraPosition={cameraPosition} />
+      </Canvas>
+    </>
   )
 }

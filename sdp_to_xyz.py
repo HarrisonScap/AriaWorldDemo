@@ -22,11 +22,11 @@ def main():
                     # Skip the first line (header)
                     firstLine = False
                     continue
-                
+
                 foo = line.strip().split(',')  # Split the line by commas
                 
                 # Write the processed data to the output file
-                xyz_file.write(f"{foo[3]} {foo[4]} {foo[5]}\n")  # Add a newline after each line
+                xyz_file.write(f"{foo[2]} {foo[3]} {foo[4]} {foo[5]} {foo[6]}\n")  # Add a newline after each line
 
 
 if __name__ == "__main__":

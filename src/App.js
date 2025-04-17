@@ -12,21 +12,47 @@ extend({ TAARenderPass, OutputPass })
 function SinglePoint() {
   const { scene } = useThree()
 
-  const material_white = new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: 5,
-    sizeAttenuation: false,
-  })
-
   useEffect(() => {
+    const group = new THREE.Group() // Create a group to hold the points
+    group.scale.set(0.1, 0.1, 0.1)  // Scale the entire group down
+
     const geometry = new THREE.BufferGeometry()
-    const vertices = new Float32Array([0, 0, 0]) // One point at origin
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+    const material = new THREE.PointsMaterial({
+      vertexColors: true,
+      size: 5,
+      sizeAttenuation: false,
+    })
 
-    const dot = new THREE.Points(geometry, material_white)
-    scene.add(dot)
+    fetch('/AriaWorldDemo/xyz.txt')
+      .then((response) => response.text())
+      .then((data) => {
+        const lines = data.split('\n')
+        const vertices = []
+        const colors = []
 
-    return () => scene.remove(dot) // cleanup
+        lines.forEach((line) => {
+          const parts = line.trim().split(/\s+/)
+          if (parts.length === 5) {
+            const [x, y, z, inv_dist_std, dist_std] = parts.map(Number)
+
+            vertices.push(x, y, -z) // No need to scale here anymore
+
+            // Map dist_std to alpha (transparency)
+            const clampedStd = Math.min(Math.max(dist_std, 0), 0.2)
+            const alpha = 1.0 - clampedStd / 0.2
+            colors.push(1, 1, 1, alpha)
+          }
+        })
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3))
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4))
+
+        const points = new THREE.Points(geometry, material)
+        group.add(points)        // Add points to the group
+        scene.add(group)         // Add the group to the scene
+      })
+
+    return () => scene.clear()
   }, [scene])
 
   return null

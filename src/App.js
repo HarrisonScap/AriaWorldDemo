@@ -1,13 +1,18 @@
-import * as THREE from 'three'
-import { useRef, useEffect } from 'react'
-import { Canvas, extend, useThree } from '@react-three/fiber'
-import { Splat, Float, CameraControls, StatsGl, Effects, Point } from '@react-three/drei'
-import { Physics, RigidBody, CuboidCollider, BallCollider } from '@react-three/rapier'
-import { TAARenderPass } from 'three/examples/jsm/postprocessing/TAARenderPass'
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass'
-import { useControls } from 'leva'
+// import * as THREE from 'three'
+// import { useRef, useEffect } from 'react'
+// import { Canvas, extend, useThree } from '@react-three/fiber'
+// import { Splat, Float, CameraControls, PointerLockControls, StatsGl, Effects, Point } from '@react-three/drei'
+// import { Physics, RigidBody, CuboidCollider, BallCollider } from '@react-three/rapier'
+// import { TAARenderPass } from 'three/examples/jsm/postprocessing/TAARenderPass'
+// import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass'
+// import { useControls } from 'leva'
 
-extend({ TAARenderPass, OutputPass })
+import * as THREE from 'three'
+import { useEffect } from 'react'
+import { Canvas, useThree } from '@react-three/fiber'
+import { PointerLockControls } from '@react-three/drei'
+import { PlayerController } from './controller.js' // Assuming you have a controller.js file for player movement
+// extend({ TAARenderPass, OutputPass })
 
 function SinglePoint() {
   const { scene } = useThree()
@@ -15,6 +20,8 @@ function SinglePoint() {
   useEffect(() => {
     const group = new THREE.Group() // Create a group to hold the points
     group.scale.set(0.1, 0.1, 0.1)  // Scale the entire group down
+
+    group.rotation.x = Math.PI / 2
 
     const geometry = new THREE.BufferGeometry()
     const material = new THREE.PointsMaterial({
@@ -38,9 +45,9 @@ function SinglePoint() {
             vertices.push(x, y, -z) // No need to scale here anymore
 
             // Map dist_std to alpha (transparency)
-            const clampedStd = Math.min(Math.max(dist_std, 0), 0.2)
-            const alpha = 1.0 - clampedStd / 0.2
-            colors.push(1, 1, 1, alpha)
+            // const clampedStd = Math.min(Math.max(dist_std, 0), 0.2)
+            // const alpha = 1.0 - clampedStd / 0.2
+            colors.push(1, 1, 1, 1)
           }
         })
 
@@ -65,10 +72,9 @@ export default function App() {
       <color attach="background" args={['black']} />
 
       {/* Display a single splat at a specific position */}
-      <CameraControls makeDefault />
-
-      {/* Requires appending of /AriaWorldDemo/ to front of any assets... */}
-      {/*       This will purely work to render the splat visually        */}
+      {/* <CameraControls makeDefault /> */}
+      <PointerLockControls />
+      <PlayerController />
 
       {/* <Splat src="/AriaWorldDemo/assets/bonsai-7k.splat" position={[0, 0, 0]} />  */}
       <SinglePoint />

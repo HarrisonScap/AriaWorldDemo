@@ -5,7 +5,7 @@ import { PointerLockControls } from '@react-three/drei'
 import { PlayerController } from './controller.js'
 import { PointCloud } from './PointCloud.js'
 import { CameraTracker } from './CameraTracker.js'
-import { useLoopingSound } from './sound.js' // Import the sound logic
+import { preloadAudio, useLoopingSound } from './sound.js'
 
 export default function App() {
   const [pointCount, setPointCount] = useState(0) // State to track the total number of points
@@ -14,14 +14,27 @@ export default function App() {
   const cameraPosition = useRef(new THREE.Vector3()) // Track camera position
   const [soundEnabled, setSoundEnabled] = useState(false) // State to toggle sound
   const [activeCloud, setActiveCloud] = useState('xyz') // State to track the active point cloud
+  const [audioBuffers, setAudioBuffers] = useState({}) // Store preloaded audio buffers
 
-  // Determine the sound file based on the active cloud
-  const soundFile = activeCloud === 'ply' 
-    ? '/AriaWorldDemo/assets/pointsound2.wav' 
-    : '/AriaWorldDemo/assets/pointsound.wav'
+  // Preload audio files
+  useEffect(() => {
+    const preloadSounds = async () => {
+      const context = new (window.AudioContext || window.webkitAudioContext)()
+      const buffers = {
+        xyz: await preloadAudio(context, '/AriaWorldDemo/assets/pointsound.wav'),
+        ply: await preloadAudio(context, '/AriaWorldDemo/assets/pointsound2.wav'),
+      }
+      setAudioBuffers(buffers)
+    }
 
-  // ########################### Sound stuff ############################  //
-  useLoopingSound(soundEnabled, soundFile)
+    preloadSounds()
+  }, [])
+
+  // Determine the active sound based on the active cloud
+  const activeSound = activeCloud === 'ply' ? 'ply' : 'xyz'
+
+  // Use the preloaded audio buffers
+  useLoopingSound(soundEnabled, audioBuffers, activeSound)
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -38,9 +51,7 @@ export default function App() {
       window.removeEventListener('keydown', handleKeyPress)
     }
   }, [])
-  // #####################################################################  //
 
-  // Map activeCloud to display names
   const cloudNames = {
     xyz: 'loc5_script4_seq6_rec1\n(Aria Everyday Activities Dataset)', // Replace with the actual name for the XYZ cloud
     ply: 'Apartment_release_golden_skeleton_seq100_10s_sample_M1292\n(Aria Twin Dataset)', // Replace with the actual name for the PLY cloud
@@ -70,50 +81,56 @@ export default function App() {
       )}
 
       {/* Overlay text for point count */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        color: 'white',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        padding: '5px',
-        borderRadius: '5px',
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '20px',
-        zIndex: 1,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          color: 'white',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          padding: '5px',
+          borderRadius: '5px',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '20px',
+          zIndex: 1,
+        }}
+      >
         Points in Scene: {pointCount}
       </div>
 
       {/* Overlay text for active cloud */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        color: 'gold',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        padding: '5px',
-        borderRadius: '5px',
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '15px',
-        zIndex: 1,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: '10px',
+          right: '10px',
+          color: 'gold',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          padding: '5px',
+          borderRadius: '5px',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '15px',
+          zIndex: 1,
+        }}
+      >
         {cloudNames[activeCloud]}
       </div>
 
       {/* Sound Toggle */}
-      <div style={{
-        position: 'absolute',
-        top: '50px',
-        left: '10px',
-        color: 'white',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        padding: '5px',
-        borderRadius: '5px',
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '16px',
-        zIndex: 1,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: '50px',
+          left: '10px',
+          color: 'white',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          padding: '5px',
+          borderRadius: '5px',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '16px',
+          zIndex: 1,
+        }}
+      >
         <label>
           <input
             type="checkbox"
@@ -121,18 +138,22 @@ export default function App() {
             onChange={(e) => setSoundEnabled(e.target.checked)}
           />
           Enable Sound (X to toggle)
-          <br/>
+          <br />
           Right Arrow to Swap Point Cloud
         </label>
       </div>
 
       {/* Canvas */}
       <Canvas camera={{ position: [4, 1.5, -4], fov: 35 }}>
-        {/* Conditionally set the background color */}
         <color attach="background" args={[activeCloud === 'ply' ? 'skyblue' : 'black']} />
         <PointerLockControls />
         <PlayerController />
-        <PointCloud setPointCount={setPointCount} setPoints={setPoints} activeCloud={activeCloud} setLoading={setLoading} />
+        <PointCloud
+          setPointCount={setPointCount}
+          setPoints={setPoints}
+          activeCloud={activeCloud}
+          setLoading={setLoading} // Pass setLoading to PointCloud
+        />
         <CameraTracker cameraPosition={cameraPosition} />
       </Canvas>
     </>

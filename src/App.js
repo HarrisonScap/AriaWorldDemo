@@ -10,6 +10,7 @@ import { useLoopingSound } from './sound.js' // Import the sound logic
 export default function App() {
   const [pointCount, setPointCount] = useState(0) // State to track the total number of points
   const [points, setPoints] = useState([]) // State to store the points
+  const [loading, setLoading] = useState(true) // State to track loading status
   const cameraPosition = useRef(new THREE.Vector3()) // Track camera position
   const [soundEnabled, setSoundEnabled] = useState(false) // State to toggle sound
   const [activeCloud, setActiveCloud] = useState('xyz') // State to track the active point cloud
@@ -47,6 +48,27 @@ export default function App() {
 
   return (
     <>
+      {/* Loading overlay */}
+      {loading && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            padding: '10px 20px',
+            borderRadius: '10px',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '24px',
+            zIndex: 2,
+          }}
+        >
+          Loading...
+        </div>
+      )}
+
       {/* Overlay text for point count */}
       <div style={{
         position: 'absolute',
@@ -110,7 +132,7 @@ export default function App() {
         <color attach="background" args={[activeCloud === 'ply' ? 'skyblue' : 'black']} />
         <PointerLockControls />
         <PlayerController />
-        <PointCloud setPointCount={setPointCount} setPoints={setPoints} activeCloud={activeCloud} />
+        <PointCloud setPointCount={setPointCount} setPoints={setPoints} activeCloud={activeCloud} setLoading={setLoading} />
         <CameraTracker cameraPosition={cameraPosition} />
       </Canvas>
     </>

@@ -1,6 +1,4 @@
-Aria World Gaussian Splatting Project
+Aria World Visualization Project
 
-Based on
-https://codesandbox.io/p/sandbox/qp4jmf
-
-This project utilizes react-three/fiber/drei which has an addon that supports rendering of .splat files
+Datasets from 
+https://explorer.projectaria.com/adt?sf=%5B%22sequence_uid%22%5D&p=3

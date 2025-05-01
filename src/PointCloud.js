@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { useEffect, useState } from 'react'
 import { useThree } from '@react-three/fiber'
 
-export function PointCloud({ setPointCount, activeCloud }) {
+export function PointCloud({ setPointCount, activeCloud, setLoading }) {
   const { scene } = useThree()
   const [xyzData, setXyzData] = useState(null) // Preloaded XYZ data
   const [plyData, setPlyData] = useState(null) // Preloaded PLY data
@@ -10,6 +10,7 @@ export function PointCloud({ setPointCount, activeCloud }) {
   // Preload point cloud data
   useEffect(() => {
     const preloadData = async () => {
+      setLoading(true) // Start loading
       const xyzResponse = await fetch('/AriaWorldDemo/xyz.txt')
       const xyzText = await xyzResponse.text()
       setXyzData(xyzText)
@@ -17,10 +18,11 @@ export function PointCloud({ setPointCount, activeCloud }) {
       const plyResponse = await fetch('/AriaWorldDemo/colored_cloud_frame1.ply')
       const plyText = await plyResponse.text()
       setPlyData(plyText)
+      setLoading(false) // Finish loading
     }
 
     preloadData()
-  }, [])
+  }, [setLoading])
 
   useEffect(() => {
     const groupXYZ = new THREE.Group()
